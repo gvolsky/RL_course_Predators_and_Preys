@@ -19,9 +19,20 @@ class GridWorld:
 
     def step(self):
         self._steps += 1
-        # Predators move
         initiative = [(t, ent) for t in range(self.playable_teams_num) for ent in self.teams[t]]
         eaten = dict()
+        step_result = {i:
+            {   
+                'true_action': [0] * self.playable_team_size,
+                'eaten_preys': [0] * self.playable_team_size,
+                'eaten_enemies': [0] * self.playable_team_size,
+                'bonus_on_step': [0] * self.playable_team_size,
+                'team_attack': [0] * self.playable_team_size,
+                'on_team_attack': [0] * self.playable_team_size,
+                'dead_members': [0] * self.playable_team_size,
+            } for i in range(self.playable_teams_num)
+        }
+        # Predators move
         self.random.shuffle(initiative)
         for i in initiative:
             action = self.actions.get(i, 0)
@@ -33,27 +44,34 @@ class GridWorld:
                 if self.map[ty, tx][0] == self.playable_teams_num:
                     self.eaten_preys.add(tuple(self.map[ty, tx]))
                     self.preys[self.map[ty, tx][1]].alive = False
+                    step_result[ent.team]['eaten_preys'][ent.idx] += 1
                 else:
                     other_ent = self.teams[self.map[ty, tx][0]][self.map[ty, tx][1]]
                     if other_ent.bonus_count > 0:
                         other_ent.bonus_count -= 1
+                        step_result[ent.team]['team_attack'][ent.idx] += 1
+                        step_result[other_ent.team]['on_team_attack'][other_ent.idx] += 1
                         continue
                     else:
                         self.teams[self.map[ty, tx][0]][self.map[ty, tx][1]].alive = False
+                        step_result[ent.team]['eaten_enemies'][ent.idx] += 1
+                        step_result[other_ent.team]['dead_members'][other_ent.idx] += 1
 
                 eaten[tuple(self.map[ty, tx])] = i
-                self.map[y, x] = np.array((-1, 0), dtype=np.long)
-                self.map[ty, tx] = np.array(i, dtype=np.long)
+                self.map[y, x] = np.array((-1, 0), dtype=np.int64)
+                self.map[ty, tx] = np.array(i, dtype=np.int64)
                 ent.x, ent.y = tx, ty
             else:
                 if self.map[ty, tx][0] == -1:
                     if self.map[ty, tx][1] == 1:
                         ent.bonus_count += 1
+                        step_result[ent.team]['bonus_on_step'][ent.idx] += 1
                         self.map[ty, tx][1] = 0
                     if self.map[ty, tx][1] == 0:
-                        self.map[y, x] = np.array((-1, 0), dtype=np.long)
-                        self.map[ty, tx] = np.array(i, dtype=np.long)
+                        self.map[y, x] = np.array((-1, 0), dtype=np.int64)
+                        self.map[ty, tx] = np.array(i, dtype=np.int64)
                         ent.x, ent.y = tx, ty
+                        step_result[ent.team]['true_action'][ent.idx] += 1
 
         # Preys move
         for prey in self.preys:
@@ -63,8 +81,8 @@ class GridWorld:
             x, y, tx, ty = self._action_coord_change(prey, action)
             if self.map[ty, tx][0] == -1:
                 if self.map[ty, tx][1] == 0:
-                    self.map[y, x] = np.array((-1, 0), dtype=np.long)
-                    self.map[ty, tx] = np.array((self.playable_teams_num, prey.idx), dtype=np.long)
+                    self.map[y, x] = np.array((-1, 0), dtype=np.int64)
+                    self.map[ty, tx] = np.array((self.playable_teams_num, prey.idx), dtype=np.int64)
                     prey.x, prey.y = tx, ty
 
         # Respawn predators
@@ -74,7 +92,7 @@ class GridWorld:
         if self.spawn_bonus_every > 0 and self._steps % self.spawn_bonus_every == 0:
             self._spawn_bonus()
 
-        return eaten
+        return eaten, step_result
 
     def set_actions(self, team_idx2action):
         self.actions.update(team_idx2action)
@@ -132,7 +150,7 @@ class GridWorld:
         return spawned
 
     def _build_map(self):
-        self.map = np.zeros((self.base_map.shape[0], self.base_map.shape[1], 2), np.int)
+        self.map = np.zeros((self.base_map.shape[0], self.base_map.shape[1], 2), np.int32)
         self.preys.clear()
         for sc in self.team_spawn_coordinates:
             sc.clear()
@@ -142,14 +160,14 @@ class GridWorld:
         for x in range(self.base_map.shape[1]):
             for y in range(self.base_map.shape[0]):
                 if self.base_map[y, x] == -1:
-                    self.map[y, x] = np.array([-1, -1], dtype=np.long) # Unpassable tiles
+                    self.map[y, x] = np.array([-1, -1], dtype=np.int64) # Unpassable tiles
                     continue # Passable tile
                 elif self.base_map[y, x] == -2:
-                    self.map[y, x] = np.array((self.playable_teams_num, len(self.preys)), dtype=np.long)
+                    self.map[y, x] = np.array((self.playable_teams_num, len(self.preys)), dtype=np.int64)
                     self.preys.append(Entity(x, y, len(self.preys), self.playable_teams_num, True))
                     continue
                 elif 0 <= self.base_map[y, x] <= self.playable_teams_num:
-                    self.map[y, x] = np.array([-1, 0], dtype=np.long)
+                    self.map[y, x] = np.array([-1, 0], dtype=np.int64)
                     if 0 < self.base_map[y, x] <= self.playable_teams_num:
                         self.team_spawn_coordinates[self.base_map[y, x]-1].append((x, y))  # Add Spawn point
                 else:

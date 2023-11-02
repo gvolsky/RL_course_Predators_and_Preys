@@ -8,6 +8,7 @@ class Realm:
         self.world = GridWorld(map_loader, playable_team_size, playable_teams_num,
                                spawn_bonus_every=spawn_bonus_every)
         self.playable_teams_num = playable_teams_num
+        self.playable_team_size = playable_team_size
         self.bots = bots
         self.step_limit = step_limit
         self.step_num = 0
@@ -17,6 +18,17 @@ class Realm:
         self.team_acted = None
         self.actions = {}
         self.eaten = dict()
+        self.step_result = {i:
+            {   
+                'true_action': [0] * self.playable_team_size,
+                'eaten_preys': [0] * self.playable_team_size,
+                'eaten_enemies': [0] * self.playable_team_size,
+                'bonus_on_step': [0] * self.playable_team_size,
+                'team_attack': [0] * self.playable_team_size,
+                'on_team_attack': [0] * self.playable_team_size,
+                'dead_members': [0] * self.playable_team_size,
+            } for i in range(self.playable_teams_num)
+        }
 
     def step(self):
         map = copy.deepcopy(self.world.map)
@@ -25,7 +37,7 @@ class Realm:
         if self.step_num < self.step_limit:
             self.step_num += 1
             self.world.set_actions(self.actions)
-            self.eaten = self.world.step()
+            self.eaten, self.step_result = self.world.step()
         else:
             self.done = True
             self.eaten.clear()
@@ -61,6 +73,17 @@ class Realm:
         self.team_scores = [0. for _ in range(self.playable_teams_num)]
         self.team_require_action = [(i not in self.bots) for i in range(self.playable_teams_num)]
         self.team_acted = [False for _ in range(self.playable_teams_num)]
+        self.step_result = {i:
+            {   
+                'true_action': [0] * self.playable_team_size,
+                'eaten_preys': [0] * self.playable_team_size,
+                'eaten_enemies': [0] * self.playable_team_size,
+                'bonus_on_step': [0] * self.playable_team_size,
+                'team_attack': [0] * self.playable_team_size,
+                'on_team_attack': [0] * self.playable_team_size,
+                'dead_members': [0] * self.playable_team_size,
+            } for i in range(self.playable_teams_num)
+        }
 
         map = copy.deepcopy(self.world.map)
         for k, bot in self.bots.items():

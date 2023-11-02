@@ -2,6 +2,7 @@ import numpy as np
 import copy
 import cv2
 import os
+from PIL import Image
 
 
 class RenderedEnvWrapper:
@@ -41,18 +42,26 @@ class RenderedEnvWrapper:
             frame[map[:, :, 0] == i] = i
         return frame
 
-    def render(self, dir="render", resize_factor=8):
+    def render(self, dir="render", name=None, resize_factor=8, duration_factor=8):
         os.makedirs(dir, exist_ok=True)
+        images = []
         for i in range(len(self.frames)):
             frame = self.frames[i]
             img = np.zeros((frame.shape[0], frame.shape[1], 3))
             img[frame == -1] = self.road_color
             img[frame == -2] = self.stone_color
-            img[frame == -3] = self.bonus_color
             for j in range(self.base_env.realm.world.playable_teams_num):
                 img[frame == j] = self.team_colors[j]
             img[frame == self.base_env.realm.world.playable_teams_num] = self.prey_color
             img = img * 255
             img = cv2.resize(img, (int(img.shape[1] * resize_factor), int(img.shape[0] * resize_factor)),
                              interpolation=cv2.INTER_NEAREST)
-            cv2.imwrite(f"{dir}/{i}.png", img)
+            images.append(Image.fromarray(img.astype(np.uint8)))
+        name = name if name is not None else i
+        images[0].save(
+            f"{dir}/{name}.gif", 
+            save_all=True, 
+            append_images=images[1:],
+            duration=len(images) // duration_factor,
+            loop=0
+        )

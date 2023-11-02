@@ -14,7 +14,8 @@ class OnePlayerEnv:
             "eaten": copy.deepcopy(self.realm.eaten),
             "preys": copy.deepcopy([prey.get_state() for prey in self.realm.world.preys]),
             "predators": copy.deepcopy([predator.get_state() for predator in self.realm.world.teams[0].values()]),
-            "scores": copy.deepcopy(self.realm.team_scores)
+            "scores": copy.deepcopy(self.realm.team_scores),
+            "step_result": copy.deepcopy(self.realm.step_result),
         }
         done = self.realm.done or len(self.realm.world.eaten_preys) == len(self.realm.world.preys)
         return state, done, info
@@ -26,7 +27,8 @@ class OnePlayerEnv:
             "eaten": copy.deepcopy(self.realm.eaten),
             "preys": copy.deepcopy([prey.get_state() for prey in self.realm.world.preys]),
             "predators": copy.deepcopy([predator.get_state() for predator in self.realm.world.teams[0].values()]),
-            "scores": copy.deepcopy(self.realm.team_scores)
+            "scores": copy.deepcopy(self.realm.team_scores),
+            "step_result": copy.deepcopy(self.realm.step_result),
         }
         return state, info
 
