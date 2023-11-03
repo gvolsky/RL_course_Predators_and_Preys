@@ -27,6 +27,7 @@ class Realm:
                 'team_attack': [0] * self.playable_team_size,
                 'on_team_attack': [0] * self.playable_team_size,
                 'dead_members': [0] * self.playable_team_size,
+                'steps': 0,
             } for i in range(self.playable_teams_num)
         }
 
@@ -82,6 +83,7 @@ class Realm:
                 'team_attack': [0] * self.playable_team_size,
                 'on_team_attack': [0] * self.playable_team_size,
                 'dead_members': [0] * self.playable_team_size,
+                'steps': 0,
             } for i in range(self.playable_teams_num)
         }
 

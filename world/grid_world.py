@@ -30,6 +30,7 @@ class GridWorld:
                 'team_attack': [0] * self.playable_team_size,
                 'on_team_attack': [0] * self.playable_team_size,
                 'dead_members': [0] * self.playable_team_size,
+                'steps': self._steps,
             } for i in range(self.playable_teams_num)
         }
         # Predators move
