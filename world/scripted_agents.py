@@ -14,6 +14,17 @@ class ScriptedAgent:
         pass
 
 
+class Fixed(ScriptedAgent):
+    def __init__(self, num_predators=5):
+        self.num_predators = num_predators
+
+    def get_actions(self, state, team):
+        return [0 for i in range(self.num_predators)]
+
+    def reset(self, initial_state, team):
+        pass
+
+
 class Dummy(ScriptedAgent):
     def __init__(self, num_predators=5):
         self.num_predators = num_predators
