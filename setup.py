@@ -12,6 +12,6 @@ setuptools.setup(
     install_requires=['opencv-python',
                       'Pillow',
                       'numpy',
-                      'torchrl'
+                    #   'torchrl'
                      ],
 )
