@@ -1,5 +1,6 @@
 from .grid_world import GridWorld
 import copy
+import numpy as np
 
 
 class Realm:
@@ -18,6 +19,8 @@ class Realm:
         self.team_acted = None
         self.actions = {}
         self.eaten = dict()
+        self.total_eaten_preys = np.zeros((playable_team_size,), dtype=np.float32)
+        self.total_eaten_enemies = np.zeros((playable_team_size,), dtype=np.float32)
         self.step_result = {i:
             {   
                 'true_action': [0] * self.playable_team_size,
@@ -42,6 +45,12 @@ class Realm:
         else:
             self.done = True
             self.eaten.clear()
+        self.total_eaten_preys += np.array(
+            self.step_result[0]['eaten_preys'], dtype=np.float32
+        )
+        self.total_eaten_enemies += np.array(
+            self.step_result[0]['eaten_enemies'], dtype=np.float32
+        )
         self.actions.clear()
         self.update_score()
         self.team_acted = [False for _ in range(self.playable_teams_num)]
