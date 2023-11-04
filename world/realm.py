@@ -83,6 +83,8 @@ class Realm:
         self.team_scores = [0. for _ in range(self.playable_teams_num)]
         self.team_require_action = [(i not in self.bots) for i in range(self.playable_teams_num)]
         self.team_acted = [False for _ in range(self.playable_teams_num)]
+        self.total_eaten_preys = np.zeros((self.playable_team_size,), dtype=np.float32)
+        self.total_eaten_enemies = np.zeros((self.playable_team_size,), dtype=np.float32)
         self.step_result = {i:
             {   
                 'true_action': [0] * self.playable_team_size,
