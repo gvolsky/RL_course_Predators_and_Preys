@@ -42,13 +42,14 @@ def get_reward(
         attack_reward=0.7,
         attack_coef=0.99,
         dead_penalty=1.5,
+        inaction_penalty=0.7
         ):
     step = step_coef ** step_info['steps'] * (np.array(step_info['true_action']) * step_reward)
     prey_bonus = prey_coef ** total_eaten_preys * (prey_reward * np.array(step_info['eaten_preys']))
     enemy_bonus = enemy_coef ** total_eaten_enemies * (enemy_reward * np.array(step_info['eaten_enemies']))
     bonus = bonus_coef ** step_info['steps'] * np.array(step_info['bonus_on_step']) * bonus_reward
     attack_bonus = attack_coef ** step_info['steps'] * np.array(step_info['team_attack']) * attack_reward
-    penalty = -1.0 * dead_penalty * np.array(step_info['dead_members'])
+    penalty = -dead_penalty * np.array(step_info['dead_members']) + inaction_penalty * (np.array(step_info['true_action']) - 1)
     # print(f'''
     #       step: {step}, 
     #       prey: {prey_bonus}, 
