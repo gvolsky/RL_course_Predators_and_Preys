@@ -105,6 +105,7 @@ class GridWorld:
         self.eaten_preys.clear()
         self.random = random.Random(seed)
         self.base_map = self.map_loader.load_next(seed)
+        self._steps = 0
         self._build_map()
         for i in range(self.playable_teams_num):
             self._spawn_team(i)
